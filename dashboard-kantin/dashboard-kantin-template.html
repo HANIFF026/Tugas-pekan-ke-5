@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="id" data-theme="light:light dark:dark spacing:spacing typography:typography shape:shape" data-color-mode="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Kantin HSI</title>
+<script>
+// Pilih mode warna sebelum halaman digambar (hindari kedip)
+(function(){
+  let m=null;try{m=localStorage.getItem('kantin-color-mode');}catch(e){}
+  if(m!=='light'&&m!=='dark') m=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  document.documentElement.setAttribute('data-color-mode',m);
+})();
+</script>
+
+<!-- Atlassian Design System: CSS reset -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@atlaskit/css-reset@8.4.3/dist/bundle.css">
+<!-- CSS library -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2/dist/css/tom-select.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tabulator-tables@6/dist/css/tabulator.min.css">
+
+<style>
+/* ============ Fallback token ADS ============
+   Token resmi dimuat dari @atlaskit/tokens (lihat loadTokens()).
+   Nilai di bawah hanya cadangan saat token belum/tidak termuat. */
+:root{
+  --ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-text-inverse:#FFFFFF;
+  --ds-text-selected:#1868DB;--ds-text-danger:#AE2E24;--ds-text-success:#4C6B1F;--ds-link:#1868DB;
+  --ds-text-accent-blue:#1558BC;--ds-text-accent-green:#216E4E;--ds-text-accent-purple:#803FA5;
+  --ds-text-accent-yellow:#7F5F01;--ds-text-accent-teal:#206A83;--ds-text-accent-red:#AE2E24;
+  --ds-icon:#292A2E;--ds-icon-subtle:#505258;--ds-icon-danger:#C9372C;--ds-icon-warning:#E06C00;
+  --ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-surface-raised:#FFFFFF;--ds-surface-overlay:#FFFFFF;
+  --ds-shadow-raised:0px 1px 1px #1E1F2140,0px 0px 1px #1E1F214F;
+  --ds-shadow-overlay:0px 8px 12px #1E1F2126,0px 0px 1px #1E1F214F;
+  --ds-border:#0B120E24;--ds-border-input:#8C8F97;--ds-border-focused:#4688EC;--ds-border-selected:#1868DB;--ds-border-bold:#7D818A;
+  --ds-background-input:#FFFFFF;--ds-background-input-hovered:#F8F8F8;
+  --ds-background-neutral:#0515240F;--ds-background-neutral-hovered:#0B120E24;--ds-background-neutral-pressed:#080F214A;
+  --ds-background-neutral-subtle-hovered:#0515240F;--ds-background-neutral-bold:#292A2E;
+  --ds-background-selected:#E9F2FE;--ds-background-selected-hovered:#CFE1FD;
+  --ds-background-brand-bold:#1868DB;--ds-background-brand-bold-hovered:#1558BC;
+  --ds-background-danger-bold:#C9372C;--ds-background-danger-bold-hovered:#AE2E24;
+  --ds-background-accent-blue-subtler:#CFE1FD;--ds-background-accent-green-subtler:#BAF3DB;
+  --ds-background-accent-purple-subtler:#EED7FC;--ds-background-accent-yellow-subtler:#F5E989;
+  --ds-background-accent-teal-subtler:#C6EDFB;--ds-background-accent-red-subtler:#FFD5D2;
+  --ds-chart-brand:#357DE8;--ds-chart-brand-hovered:#1868DB;
+  --ds-chart-categorical-1:#357DE8;--ds-chart-categorical-2:#82B536;--ds-chart-categorical-3:#BF63F3;
+  --ds-font-family-body:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Ubuntu,"Helvetica Neue",sans-serif;
+  --ds-font-weight-medium:500;--ds-font-weight-semibold:600;--ds-font-weight-bold:653;
+  --ds-radius-small:.25rem;--ds-radius-medium:.375rem;--ds-radius-large:.5rem;
+  --ds-space-050:.25rem;--ds-space-100:.5rem;--ds-space-150:.75rem;--ds-space-200:1rem;--ds-space-300:1.5rem;--ds-space-400:2rem;
+}
+:root[data-color-mode="dark"]{
+  --ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#96999E;--ds-text-inverse:#1F1F21;
+  --ds-text-selected:#669DF1;--ds-text-danger:#FD9891;--ds-text-success:#B3DF72;--ds-link:#669DF1;
+  --ds-text-accent-blue:#8FB8F6;--ds-text-accent-green:#7EE2B8;--ds-text-accent-purple:#D8A0F7;
+  --ds-text-accent-yellow:#EED12B;--ds-text-accent-teal:#9DD9EE;--ds-text-accent-red:#FD9891;
+  --ds-icon:#CECFD2;--ds-icon-subtle:#A9ABAF;--ds-icon-danger:#F15B50;--ds-icon-warning:#FBC828;
+  --ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-surface-raised:#242528;--ds-surface-overlay:#2B2C2F;
+  --ds-shadow-raised:0px 0px 0px 1px #00000000,0px 1px 1px #01040480,0px 0px 1px #01040480;
+  --ds-shadow-overlay:0px 0px 0px 1px #BDBDBD1F,0px 8px 12px #0104045C,0px 0px 1px 1px #01040480;
+  --ds-border:#E3E4F21F;--ds-border-input:#7E8188;--ds-border-focused:#8FB8F6;--ds-border-selected:#669DF1;--ds-border-bold:#7E8188;
+  --ds-background-input:#242528;--ds-background-input-hovered:#2B2C2F;
+  --ds-background-neutral:#CECED912;--ds-background-neutral-hovered:#E3E4F21F;--ds-background-neutral-pressed:#E5E9F640;
+  --ds-background-neutral-subtle-hovered:#CECED912;--ds-background-neutral-bold:#CECFD2;
+  --ds-background-selected:#1C2B42;--ds-background-selected-hovered:#123263;
+  --ds-background-brand-bold:#669DF1;--ds-background-brand-bold-hovered:#8FB8F6;
+  --ds-background-danger-bold:#F87168;--ds-background-danger-bold-hovered:#FD9891;
+  --ds-background-accent-blue-subtler:#123263;--ds-background-accent-green-subtler:#164B35;
+  --ds-background-accent-purple-subtler:#48245D;--ds-background-accent-yellow-subtler:#533F04;
+  --ds-background-accent-teal-subtler:#164555;--ds-background-accent-red-subtler:#5D1F1A;
+  --ds-chart-brand:#4688EC;--ds-chart-brand-hovered:#669DF1;
+  --ds-chart-categorical-1:#4688EC;--ds-chart-categorical-2:#94C748;--ds-chart-categorical-3:#C97CF4;
+}
+
+/* ============ Dasar ============ */
+*{box-sizing:border-box}
+html,body{background:var(--ds-surface-sunken);color:var(--ds-text)}
+body{margin:0;font-family:var(--ds-font-family-body);font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4,h5{margin:0;color:var(--ds-text);font-weight:var(--ds-font-weight-bold);letter-spacing:normal}
+svg.ic{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+:focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+
+/* ============ Layout ============ */
+.app{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:100vh}
+
+/* Side navigation */
+.side{background:var(--ds-surface);border-right:1px solid var(--ds-border);display:flex;flex-direction:column;
+  padding:var(--ds-space-200) var(--ds-space-150);gap:var(--ds-space-300);position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:var(--ds-space-100);padding:0 var(--ds-space-050)}
+.brand-tile{width:32px;height:32px;border-radius:var(--ds-radius-medium);background:var(--ds-background-brand-bold);color:var(--ds-text-inverse);display:grid;place-items:center}
+.brand-tile svg.ic{width:18px;height:18px}
+.brand b{display:block;font-weight:var(--ds-font-weight-bold)}
+.brand small{display:block;font-size:12px;line-height:16px;color:var(--ds-text-subtlest)}
+.nav-h{font-size:11px;line-height:16px;font-weight:var(--ds-font-weight-bold);color:var(--ds-text-subtlest);text-transform:uppercase;letter-spacing:.02em;padding:0 var(--ds-space-100);margin-bottom:var(--ds-space-050)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{position:relative;display:flex;align-items:center;gap:var(--ds-space-150);height:40px;padding:0 var(--ds-space-100);border-radius:var(--ds-radius-small);
+  color:var(--ds-text-subtle);text-decoration:none;font-weight:var(--ds-font-weight-medium);cursor:pointer}
+.nav a:hover{background:var(--ds-background-neutral-subtle-hovered);color:var(--ds-text)}
+.nav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.nav a[aria-current="page"]::before{content:"";position:absolute;left:0;top:10px;bottom:10px;width:3px;border-radius:0 2px 2px 0;background:var(--ds-border-selected)}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:var(--ds-space-100)}
+
+/* Main */
+.main{min-width:0;padding:var(--ds-space-300) var(--ds-space-400) var(--ds-space-400);display:flex;flex-direction:column;gap:var(--ds-space-300)}
+.crumbs{display:flex;gap:var(--ds-space-050);align-items:center;color:var(--ds-text-subtlest);font-size:14px;margin-bottom:var(--ds-space-100)}
+.crumbs a{color:var(--ds-text-subtlest);text-decoration:none}
+.crumbs a:hover{color:var(--ds-text-subtle);text-decoration:underline}
+.page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--ds-space-200);flex-wrap:wrap}
+.page-head h1{font-size:24px;line-height:28px}
+.page-head .sub{color:var(--ds-text-subtle);margin-top:var(--ds-space-050)}
+.filters{display:flex;gap:var(--ds-space-150);flex-wrap:wrap;flex:1 1 420px;justify-content:flex-end}
+.field{display:flex;flex-direction:column;gap:var(--ds-space-050);flex:1 1 200px;max-width:300px;min-width:0}
+.field>label{font-size:12px;line-height:16px;font-weight:var(--ds-font-weight-bold);color:var(--ds-text-subtle)}
+
+/* Textfield */
+.textfield{position:relative;display:flex;align-items:center;min-height:36px;background:var(--ds-background-input);
+  border:1px solid var(--ds-border-input);border-radius:var(--ds-radius-small);color:var(--ds-text);transition:background .2s,border-color .2s}
+.textfield:hover{background:var(--ds-background-input-hovered)}
+.textfield:focus-within{border-color:var(--ds-border-focused);box-shadow:inset 0 0 0 1px var(--ds-border-focused)}
+.textfield>svg.ic{position:absolute;left:10px;color:var(--ds-icon-subtle);pointer-events:none;z-index:1}
+.textfield .flatpickr-wrapper{display:block;width:100%}
+.textfield input{width:100%;border:0;background:transparent;outline:0;font:inherit;color:inherit;padding:7px 8px 7px 34px;cursor:pointer}
+.textfield input::placeholder{color:var(--ds-text-subtlest)}
+
+/* Card / panel */
+.card{background:var(--ds-surface-raised);box-shadow:var(--ds-shadow-raised);border-radius:var(--ds-radius-large);padding:var(--ds-space-200) var(--ds-space-250, 1.25rem);min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:center;gap:var(--ds-space-100);margin-bottom:var(--ds-space-200)}
+.card-h h2{font-size:16px;line-height:20px}
+.card-h small{color:var(--ds-text-subtlest);font-size:12px}
+
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--ds-space-200)}
+.kpi{display:flex;flex-direction:column;gap:var(--ds-space-100)}
+.kpi-h{display:flex;align-items:center;gap:var(--ds-space-100);color:var(--ds-text-subtle);font-weight:var(--ds-font-weight-semibold)}
+.kpi-ico{width:32px;height:32px;border-radius:var(--ds-radius-medium);display:grid;place-items:center}
+.kpi-ico.blue{background:var(--ds-background-accent-blue-subtler);color:var(--ds-text-accent-blue)}
+.kpi-ico.green{background:var(--ds-background-accent-green-subtler);color:var(--ds-text-accent-green)}
+.kpi-ico.purple{background:var(--ds-background-accent-purple-subtler);color:var(--ds-text-accent-purple)}
+.kpi-h .icon-btn{margin-left:auto}
+.kpi-v{font-size:28px;line-height:32px;font-weight:var(--ds-font-weight-bold);color:var(--ds-text);font-variant-numeric:tabular-nums}
+.kpi-c{font-size:12px;line-height:16px;color:var(--ds-text-subtlest)}
+
+.row-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:var(--ds-space-200)}
+.chart-wrap{position:relative;height:260px}
+.task-caption{margin:var(--ds-space-100) 0 0;color:var(--ds-text-subtlest);font-size:12px;line-height:16px}
+
+/* Button */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--ds-space-050);height:32px;padding:0 var(--ds-space-150);border:0;
+  border-radius:var(--ds-radius-small);font:inherit;font-weight:var(--ds-font-weight-medium);cursor:pointer;white-space:nowrap;
+  background:var(--ds-background-neutral);color:var(--ds-text-subtle);transition:background .1s}
+.btn:hover{background:var(--ds-background-neutral-hovered)}
+.btn:active{background:var(--ds-background-neutral-pressed)}
+.btn.subtle{background:transparent}
+.btn.subtle:hover{background:var(--ds-background-neutral-subtle-hovered)}
+.btn.primary{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse)}
+.btn.primary:hover{background:var(--ds-background-brand-bold-hovered)}
+.btn.danger{background:var(--ds-background-danger-bold);color:var(--ds-text-inverse)}
+.btn.danger:hover{background:var(--ds-background-danger-bold-hovered)}
+.icon-btn{width:24px;height:24px;padding:0;border:0;border-radius:var(--ds-radius-small);background:transparent;color:var(--ds-icon-subtle);
+  display:inline-grid;place-items:center;cursor:pointer}
+.icon-btn:hover{background:var(--ds-background-neutral-subtle-hovered);color:var(--ds-icon)}
+.icon-btn.del:hover{color:var(--ds-icon-danger)}
+.side-foot .btn{justify-content:flex-start;width:100%;height:36px}
+
+/* Lozenge */
+.lozenge{display:inline-block;padding:0 4px;border-radius:var(--ds-radius-small);font-size:11px;line-height:16px;font-weight:var(--ds-font-weight-bold);
+  text-transform:uppercase;white-space:nowrap}
+.lozenge.blue{background:var(--ds-background-accent-blue-subtler);color:var(--ds-text-accent-blue)}
+.lozenge.green{background:var(--ds-background-accent-green-subtler);color:var(--ds-text-accent-green)}
+.lozenge.purple{background:var(--ds-background-accent-purple-subtler);color:var(--ds-text-accent-purple)}
+
+/* Tooltip (Floating UI) */
+.tooltip{position:fixed;top:0;left:0;z-index:600;max-width:240px;padding:2px 6px;border-radius:var(--ds-radius-small);
+  background:var(--ds-background-neutral-bold);color:var(--ds-text-inverse);font-size:12px;line-height:16px;
+  opacity:0;pointer-events:none;transition:opacity .12s}
+
+/* ============ Promo: daftar biasa ============ */
+.promo{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.promo li{display:flex;align-items:center;gap:var(--ds-space-150);padding:var(--ds-space-150) 0;border-bottom:1px solid var(--ds-border);margin:0}
+.promo li:last-child{border-bottom:0;padding-bottom:0}
+.promo li:first-child{padding-top:0}
+.promo .p-emoji{width:40px;height:40px;flex:none;border-radius:var(--ds-radius-medium);display:grid;place-items:center;font-size:20px}
+.promo .p-body{flex:1;min-width:0}
+.promo b{display:block;font-weight:var(--ds-font-weight-semibold);color:var(--ds-text)}
+.promo small{display:block;font-size:12px;line-height:16px;color:var(--ds-text-subtlest)}
+.lozenge.yellow{background:var(--ds-background-accent-yellow-subtler);color:var(--ds-text-accent-yellow)}
+.lozenge.teal{background:var(--ds-background-accent-teal-subtler);color:var(--ds-text-accent-teal)}
+.lozenge.red{background:var(--ds-background-accent-red-subtler);color:var(--ds-text-accent-red)}
+
+/* ============ Tom Select ============ */
+.ts-wrapper{flex:1;min-width:0}
+.ts-wrapper .ts-control{min-height:36px;padding:3px 6px;border:1px solid var(--ds-border-input);border-radius:var(--ds-radius-small);
+  background:var(--ds-background-input);color:var(--ds-text);font:inherit;box-shadow:none;gap:4px}
+.ts-wrapper .ts-control:hover{background:var(--ds-background-input-hovered)}
+.ts-wrapper.focus .ts-control{border-color:var(--ds-border-focused);box-shadow:inset 0 0 0 1px var(--ds-border-focused)}
+.ts-wrapper .ts-control input{color:var(--ds-text);font:inherit}
+.ts-wrapper .ts-control input::placeholder{color:var(--ds-text-subtlest)}
+.ts-wrapper.multi.has-items .ts-control>input{min-width:24px!important;flex:1 1 24px}
+.ts-wrapper.multi .ts-control>div{margin:0;padding:0 0 0 6px;border:0;border-radius:var(--ds-radius-small);background:var(--ds-background-neutral);
+  color:var(--ds-text);font-size:14px;line-height:24px}
+.ts-wrapper.multi .ts-control>div.active{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.ts-wrapper.plugin-remove_button .item .remove{border:0;margin-left:2px;padding:0 6px;border-radius:0 var(--ds-radius-small) var(--ds-radius-small) 0;color:var(--ds-icon-subtle)}
+.ts-wrapper.plugin-remove_button .item .remove:hover{background:var(--ds-background-accent-red-subtler);color:var(--ds-text-danger)}
+.ts-dropdown{margin-top:4px;border:0;border-radius:var(--ds-radius-small);background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);color:var(--ds-text);overflow:hidden}
+.ts-dropdown .option{padding:8px 12px}
+.ts-dropdown .active{background:var(--ds-background-neutral-subtle-hovered);color:var(--ds-text)}
+.ts-dropdown .no-results{color:var(--ds-text-subtlest);padding:8px 12px}
+
+/* ============ Flatpickr ============ */
+.flatpickr-calendar{background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);border:0;border-radius:var(--ds-radius-small);font-family:inherit;margin-top:4px}
+.flatpickr-calendar.static{top:calc(100% + 4px);left:-35px}
+.flatpickr-calendar::before,.flatpickr-calendar::after{display:none}
+.flatpickr-months .flatpickr-month,.flatpickr-current-month input.cur-year,.flatpickr-current-month .flatpickr-monthDropdown-months{color:var(--ds-text);fill:var(--ds-text);background:transparent}
+.flatpickr-current-month{font-size:14px;font-weight:var(--ds-font-weight-bold)}
+.flatpickr-current-month .flatpickr-monthDropdown-months option{background:var(--ds-surface-overlay)}
+.flatpickr-months .flatpickr-prev-month,.flatpickr-months .flatpickr-next-month{color:var(--ds-icon-subtle);fill:var(--ds-icon-subtle)}
+.flatpickr-months .flatpickr-prev-month:hover svg,.flatpickr-months .flatpickr-next-month:hover svg{fill:var(--ds-link)}
+span.flatpickr-weekday{color:var(--ds-text-subtlest);font-size:11px;font-weight:var(--ds-font-weight-bold);text-transform:uppercase}
+.flatpickr-day{color:var(--ds-text);border-radius:var(--ds-radius-small);border:0;font-size:14px}
+.flatpickr-day:hover,.flatpickr-day:focus{background:var(--ds-background-neutral-subtle-hovered);border-color:transparent}
+.flatpickr-day.today{border:0;color:var(--ds-text-selected);font-weight:var(--ds-font-weight-bold);text-decoration:underline;text-underline-offset:3px}
+.flatpickr-day.inRange,.flatpickr-day.inRange:hover{background:var(--ds-background-selected);box-shadow:-5px 0 0 var(--ds-background-selected),5px 0 0 var(--ds-background-selected);color:var(--ds-text-selected)}
+.flatpickr-day.selected,.flatpickr-day.startRange,.flatpickr-day.endRange,
+.flatpickr-day.selected:hover,.flatpickr-day.startRange:hover,.flatpickr-day.endRange:hover{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse);border-color:transparent;box-shadow:none}
+.flatpickr-day.startRange,.flatpickr-day.endRange{border-radius:var(--ds-radius-small)!important}
+.flatpickr-day.prevMonthDay,.flatpickr-day.nextMonthDay,.flatpickr-day.flatpickr-disabled,.flatpickr-day.flatpickr-disabled:hover{color:var(--ds-text-subtlest);opacity:.55;background:transparent}
+
+/* ============ Tabulator (gaya Dynamic Table) ============ */
+.tabulator{border:0;background:transparent;font-size:14px;color:var(--ds-text)}
+.tabulator .tabulator-header{background:transparent;border-bottom:2px solid var(--ds-border);color:var(--ds-text-subtlest);font-weight:var(--ds-font-weight-bold)}
+.tabulator .tabulator-header .tabulator-col{background:transparent;border-right:0}
+.tabulator .tabulator-header .tabulator-col:hover{background:var(--ds-background-neutral-subtle-hovered)!important}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content{padding:6px 8px}
+.tabulator .tabulator-header .tabulator-col .tabulator-col-title{font-size:12px}
+.tabulator .tabulator-header .tabulator-col .tabulator-arrow{border-bottom-color:var(--ds-border-bold);opacity:.5}
+.tabulator .tabulator-header .tabulator-col[aria-sort=ascending] .tabulator-arrow,
+.tabulator .tabulator-header .tabulator-col[aria-sort=descending] .tabulator-arrow{opacity:1}
+.tabulator .tabulator-header .tabulator-col[aria-sort=ascending] .tabulator-arrow{border-bottom-color:var(--ds-text-selected)}
+.tabulator .tabulator-header .tabulator-col[aria-sort=descending] .tabulator-arrow{border-top-color:var(--ds-text-selected)}
+.tabulator .tabulator-header-filter input{height:28px;padding:2px 6px!important;border:1px solid var(--ds-border-input);border-radius:var(--ds-radius-small);
+  background:var(--ds-background-input);color:var(--ds-text);font:400 13px var(--ds-font-family-body)}
+.tabulator .tabulator-header-filter input:focus{outline:0;border-color:var(--ds-border-focused);box-shadow:inset 0 0 0 1px var(--ds-border-focused)}
+.tabulator .tabulator-tableholder{background:transparent}
+.tabulator .tabulator-tableholder .tabulator-table{background:transparent;color:var(--ds-text)}
+.tabulator-row,.tabulator-row.tabulator-row-even{background:transparent;border-bottom:1px solid var(--ds-border);min-height:40px}
+.tabulator-row.tabulator-selectable:hover{background:var(--ds-background-neutral-subtle-hovered)}
+.tabulator-row .tabulator-cell{border-right:0;padding:10px 8px}
+.tabulator .tabulator-placeholder .tabulator-placeholder-contents{color:var(--ds-text-subtlest);font-size:14px;font-weight:400}
+.tabulator .tabulator-footer{background:transparent;border-top:0;color:var(--ds-text-subtle);font-weight:400;padding:12px 0 0}
+.tabulator .tabulator-footer .tabulator-page{border:0;border-radius:var(--ds-radius-small);background:transparent;color:var(--ds-text-subtle);
+  font:var(--ds-font-weight-medium) 14px var(--ds-font-family-body);min-width:32px;height:32px;padding:0 8px;margin:0 1px}
+.tabulator .tabulator-footer .tabulator-page:not(:disabled):hover{background:var(--ds-background-neutral-subtle-hovered);color:var(--ds-text)}
+.tabulator .tabulator-footer .tabulator-page.active{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.tabulator .tabulator-footer .tabulator-page:disabled{opacity:.4}
+.num{font-variant-numeric:tabular-nums}
+
+/* ============ SweetAlert2 (gaya Modal & Flag) ============ */
+div:where(.swal2-container).swal2-backdrop-show{background:rgba(5,21,36,.5)}
+.ads-modal.swal2-popup{width:400px;padding:var(--ds-space-300);border-radius:var(--ds-radius-medium);background:var(--ds-surface-overlay);
+  box-shadow:var(--ds-shadow-overlay);color:var(--ds-text);font-family:var(--ds-font-family-body);text-align:left;grid-template-columns:1fr}
+.ads-modal .swal2-title{display:flex!important;align-items:center;gap:var(--ds-space-100);padding:0;font-size:20px;line-height:24px;font-weight:var(--ds-font-weight-bold);color:var(--ds-text);text-align:left}
+.ads-modal .swal2-title svg.ic{width:24px;height:24px;color:var(--ds-icon-danger)}
+.ads-modal .swal2-html-container{margin:var(--ds-space-200) 0 0;padding:0;font-size:14px;line-height:20px;color:var(--ds-text);text-align:left}
+.ads-modal .swal2-actions{justify-content:flex-end;gap:var(--ds-space-100);margin:var(--ds-space-300) 0 0;padding:0;width:100%}
+.ads-flag.swal2-popup.swal2-toast{width:400px;max-width:calc(100vw - 32px);padding:var(--ds-space-200);border-radius:var(--ds-radius-small);
+  background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);color:var(--ds-text);font-family:var(--ds-font-family-body);
+  align-items:center;column-gap:var(--ds-space-200);row-gap:0}
+.ads-flag .swal2-icon{margin:0!important;width:24px!important;height:24px!important;min-width:24px;border:0!important;color:var(--ds-icon-success,#6A9A23)}
+.ads-flag .swal2-icon svg.ic{width:24px;height:24px}
+.ads-flag .swal2-title{margin:0!important;padding:0!important;font-size:14px!important;font-weight:var(--ds-font-weight-bold)!important;color:var(--ds-text)!important}
+.ads-flag .swal2-timer-progress-bar{background:var(--ds-background-brand-bold);opacity:.5}
+
+/* ============ Responsif ============ */
+@media (max-width:1100px){.row-2{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:var(--ds-space-100) var(--ds-space-200);gap:var(--ds-space-100)}
+  .side .nav-h{display:none}
+  .side .nav{flex-direction:row;flex-wrap:wrap}
+  .nav a{height:32px}
+  .nav a[aria-current="page"]::before{left:8px;right:8px;top:auto;bottom:0;width:auto;height:2px}
+  .side-foot{margin:0 0 0 auto}
+  .side-foot .btn span{display:none}
+  .main{padding:var(--ds-space-200)}
+  .kpis{grid-template-columns:minmax(0,1fr)}
+  .field{max-width:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ===== Sidebar ===== -->
+  <aside class="side">
+    <div class="brand">
+      <span class="brand-tile"><svg class="ic" viewBox="0 0 24 24"><path d="M3.5 9l1.8-5h13.4l1.8 5"/><path d="M3.5 9h17v1.5a2.8 2.8 0 0 1-5.6 0 2.8 2.8 0 0 1-5.8 0 2.8 2.8 0 0 1-5.6 0z"/><path d="M5 13.5V21h14v-7.5"/><path d="M10 21v-4.5h4V21"/></svg></span>
+      <div><b>Kantin HSI-BS</b><small>HSI Boarding School</small></div>
+    </div>
+    <div>
+      <div class="nav-h">Menu</div>
+      <nav class="nav" aria-label="Navigasi utama">
+        <a aria-current="page"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Dashboard</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5 9 5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>Produk</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Laporan</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Pengaturan</a>
+      </nav>
+    </div>
+    <div class="side-foot">
+      <button class="btn subtle" id="btnTheme" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Mode gelap</span></button>
+    </div>
+  </aside>
+
+  <!-- ===== Konten ===== -->
+  <main class="main">
+    <header class="page-head">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="#">Kantin HSI-BS</a><span>/</span><span>Dashboard</span></nav>
+        <h1>Dashboard Kantin</h1>
+        <p class="sub" id="dRange">-</p>
+      </div>
+      <div class="filters">
+        <div class="field">
+          <label for="fDate">Tanggal</label>
+          <div class="textfield">
+            <svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            <input id="fDate" placeholder="Pilih rentang tanggal" readonly>
+          </div>
+          <p class="task-caption">Tugas: aktifkan pemilih rentang tanggal dengan Flatpickr.</p>
+        </div>
+        <div class="field"> 
+          <label for="fKat">Kategori</label>
+          <select id="fKat" multiple></select>
+          <p class="task-caption">Tugas: ubah pilihan kategori menjadi multi-select dengan Tom Select.</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="kpis" aria-label="Ringkasan">
+      <div class="card kpi">
+        <div class="kpi-h"><span class="kpi-ico blue"><svg class="ic" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v5M18 9.5v5"/></svg></span>Omzet
+          <button class="icon-btn" type="button" data-tip="Total uang masuk (harga × jumlah) dalam rentang tanggal & kategori terpilih." aria-label="Info Omzet"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
+        <div class="kpi-v" id="kOmzet">-</div><div class="kpi-c" id="cOmzet">&nbsp;</div>
+        <p class="task-caption">Tugas: tampilkan tooltip ikon informasi dengan Floating UI.</p>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-h"><span class="kpi-ico green"><svg class="ic" viewBox="0 0 24 24"><path d="M5 8h14l-1.3 11.1a2 2 0 0 1-2 1.9H8.3a2 2 0 0 1-2-1.9z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span>Item terjual
+          <button class="icon-btn" type="button" data-tip="Jumlah porsi/barang yang terjual pada filter saat ini." aria-label="Info Item terjual"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
+        <div class="kpi-v" id="kItem">-</div><div class="kpi-c" id="cItem">&nbsp;</div>
+      </div>
+      <div class="card kpi">
+        <div class="kpi-h"><span class="kpi-ico purple"><svg class="ic" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>Transaksi
+          <button class="icon-btn" type="button" data-tip="Banyaknya catatan transaksi yang lolos filter." aria-label="Info Transaksi"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
+        <div class="kpi-v" id="kTrx">-</div><div class="kpi-c" id="cTrx">&nbsp;</div>
+      </div>
+    </section>
+
+    <section class="row-2">
+      <div class="card"><div class="card-h"><h2>Omzet per hari</h2><small>Rupiah</small></div><div class="chart-wrap"><canvas id="cBar" aria-label="Grafik omzet per hari"></canvas></div><p class="task-caption">Tugas: buat grafik batang dengan Chart.js.</p></div>
+      <div class="card"><div class="card-h"><h2>Item per kategori</h2><small>Porsi</small></div><div class="chart-wrap"><canvas id="cDn" aria-label="Grafik item per kategori"></canvas></div><p class="task-caption">Tugas: buat grafik donat dengan Chart.js.</p></div>
+    </section>
+
+    <section class="row-2">
+      <div class="card"><div class="card-h"><h2>Produk</h2><small id="tCount"></small></div><div id="tProd"></div><p class="task-caption">Tugas: tampilkan tabel interaktif dengan Tabulator, lalu gunakan SweetAlert2 saat menghapus produk.</p></div>
+      <div class="card"><div class="card-h"><h2>Promo minggu ini</h2><small id="pCount"></small></div>
+        <ul class="promo" id="promo"></ul>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="tooltip" id="tooltip" role="tooltip"></div>
+
+<!-- Script library (SEBELUM kode kita) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1/dist/floating-ui.core.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1/dist/floating-ui.dom.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2/dist/js/tom-select.complete.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4/dist/flatpickr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4/dist/l10n/id.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tabulator-tables@6/dist/js/tabulator.min.js"></script>
+
+<script src="script.js"></script>
+</body>
+</html>
